@@ -1,0 +1,90 @@
+##############
+# Works on hosts Linux, Windows and Darwin
+# Download the Android NDK, unpack somewhere, and set NDK_ROOT_DIR to it
+
+#########################
+# Check the host platform
+
+HOST_PLATFORM = linux
+ifeq ($(shell uname -a),)
+  HOST_PLATFORM = windows
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+  HOST_PLATFORM = windows
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+  HOST_PLATFORM = darwin
+else ifneq ($(findstring win,$(shell uname -a)),)
+  HOST_PLATFORM = windows
+endif
+
+#########################
+# Set the target platform
+
+TARGET_PLATFORM = android_armeabi-v7a
+
+#################
+# Toolchain setup
+############
+# Extensions
+
+OBJEXT = .o
+SOEXT  = .so
+LIBEXT = .a
+
+################
+# Platform setup
+
+STATIC_LINKING = 0
+platform       = Linux
+PLATDEFS       = -DBSPF_UNIX
+PLATCFLAGS     = -fpic -ffunction-sections -funwind-tables -fstack-protector -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -Wformat -Werror=format-security
+PLATCXXFLAGS   = -fpic -ffunction-sections -funwind-tables -fstack-protector -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -Wformat -Werror=format-security -fno-exceptions -fno-rtti
+PLATLDFLAGS    = -shared -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -lc -lm
+PLATLDXFLAGS   = -shared -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -lc -lm
+
+################
+# libretro setup
+
+RETRODEFS     = -D__LIBRETRO__
+RETROCFLAGS   =
+RETROCXXFLAGS =
+RETROLDFLAGS  =
+RETROLDXFLAGS =
+
+#################
+# Final variables
+
+DEFINES  = $(PLATDEFS) $(RETRODEFS)
+CFLAGS   = $(PLATCFLAGS) $(RETROCFLAGS) $(DEFINES) $(INCLUDES)
+CXXFLAGS = $(PLATCXXFLAGS) $(RETROCXXFLAGS) $(DEFINES) $(INCLUDES)
+LDFLAGS  = $(PLATLDFLAGS) $(RETROLDFLAGS)
+LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
+
+########
+# Tuning
+
+ifneq ($(DEBUG),)
+  CFLAGS   += -O0 -g
+  CXXFLAGS += -O0 -g
+else
+  CFLAGS   += -O3 -DNDEBUG
+  CXXFLAGS += -O3 -DNDEBUG
+endif
+
+ifneq ($(LOG_PERFORMANCE),)
+  CFLAGS   += -DLOG_PERFORMANCE
+  CXXFLAGS += -DLOG_PERFORMANCE
+endif
+
+####################################
+# Variable setup for Makefile.common
+
+CORE_DIR  ?= ..
+BUILD_DIR ?= .
+INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/arch-arm/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/include/backward
+
+include $(BUILD_DIR)/Makefile.common
+
+###############
+# Include rules
+
+include $(BUILD_DIR)/Makefile.rules
