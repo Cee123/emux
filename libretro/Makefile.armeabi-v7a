@@ -1,6 +1,5 @@
 ##############
 # Works on hosts Linux, Windows and Darwin
-# Download the Android NDK, unpack somewhere, and set NDK_ROOT_DIR to it
 
 #########################
 # Check the host platform
@@ -19,7 +18,7 @@ endif
 #########################
 # Set the target platform
 
-TARGET_PLATFORM = android_armeabi-v7a
+TARGET_PLATFORM = linux-armeabi-v7a
 
 #################
 # Toolchain setup
